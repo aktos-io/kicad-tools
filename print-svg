@@ -1,0 +1,8 @@
+#!/bin/bash
+
+filename=$1
+if [[ "$filename" == "" ]]; then
+        echo "usage: $0 file.svg"
+        exit
+fi
+inkscape --without-gui --export-pdf=/dev/stdout $filename | lpr
