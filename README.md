@@ -18,7 +18,6 @@ plot-pcb.py [your-kicad-project.kicad_pcb]
 
 This command generates following folders: 
 
-* plot-test: Use this svg files for testing if every footprint matches with real measurements or not. Print from inkjet. 
 * plot-production: Use these plots for toner transform process. Print from laser printer. 
 * plot-drill: The drill map. Print from inkjet. 
 * plot-assembly: Use `*-Front.html` and `*-Back.html` for getting assembly maps. Edit those html files to change `left: 1234px` value to fit your schema. 
@@ -31,19 +30,19 @@ print Kicad generated svg files via laser printer.
 
 ## Usage 
 
-Flip `your.svg` horizontally to create test output: 
+1. Test your layout if footprints match with real ones. Flip `your.svg` horizontally and print: 
 
 ```
 print-svg test your.svg
 ```
 
-Print `your.svg` directly from default printer via lpr: 
+2. (a) Print `your.svg` directly from default printer via lpr: 
 
 ```
 print-svg your.svg
 ```
 
-Print `your.svg` over ssh: 
+2. (b) Print `your.svg` over ssh: 
 
 ```
 print-svg remote your.svg 
