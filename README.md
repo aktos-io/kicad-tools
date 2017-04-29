@@ -27,7 +27,7 @@ This command generates following folders:
 
 * **plot-production**    : Use these plots for toner transform process. Preferably combine these layouts into one file to save toner transfer paper. Print this file from laser printer. 
 * **plot-drill**         : The drill map. Print from inkjet. 
-* **plot-assembly**      : Use `*-Front.html` and `*-Back.html` for getting assembly maps. Edit those html files to change `left: 1234px` value to fit your schema. 
+* **plot-assembly**      : Use `assembly_map_Front.html` and `assembly_map_Back.html` for getting assembly maps. Edit those html files to change the css value of `left: 1234px` to meet your needs. (TO_BE_IMPROVED)
 
 
 
