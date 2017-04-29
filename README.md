@@ -10,6 +10,12 @@ echo 'export PATH=$PATH:/path/to/download/folder' >> ~/.bashrc
 
 Use this script to generate appropriate plot files for manufacturing PCB's with toner transfer technique. 
 
+```
+cd your-kicad-project
+plot-pcb.py [your-kicad-project.kicad_pcb]
+```
+> If you omit `your-kicad-project.kicad_pcb` parameter, `plot-pcb.py` will use first `.kicad_pcb` file. 
+
 This command generates following folders: 
 
 * plot-test: Use this svg files for testing if every footprint matches with real measurements or not. Print from inkjet. 
