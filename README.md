@@ -6,7 +6,7 @@ Download this repository in any location. Add the download folder in `$PATH`:
 echo 'export PATH=$PATH:/path/to/download/folder' >> ~/.bashrc  
 ```
 
-### `plot-pcb.py`
+# `plot-pcb.py`
 
 Use this script to generate appropriate plot files for manufacturing PCB's with toner transfer technique. 
 
@@ -19,6 +19,26 @@ This command generates following folders:
 
 
 
-### `print-svg`
+# `print-svg`
 
 print Kicad generated svg files via laser printer. 
+
+## Usage 
+
+Flip `your.svg` horizontally to create test output: 
+
+```
+print-svg test your.svg
+```
+
+Print `your.svg` directly from default printer via lpr: 
+
+```
+print-svg your.svg
+```
+
+Print `your.svg` over ssh: 
+
+```
+print-svg remote your.svg 
+```
