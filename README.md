@@ -2,15 +2,22 @@
 
 Download this repository in any location. Add the download folder in `$PATH`: 
 
-```
+```bash
 echo 'export PATH=$PATH:/path/to/download/folder' >> ~/.bashrc  
+
+# if you want to use "plot-pcb remote your.svg" option, add "pcb" remote
+cat >> ~/.ssh/config <<PCB
+Host pcb
+  Hostname ip.of.remote.machine
+  User     youruser
+PCB
 ```
 
 # `plot-pcb.py`
 
 Use this script to generate appropriate plot files for manufacturing PCB's with toner transfer technique. 
 
-```
+```bash
 cd your-kicad-project
 plot-pcb.py [your-kicad-project.kicad_pcb]
 ```
@@ -18,9 +25,9 @@ plot-pcb.py [your-kicad-project.kicad_pcb]
 
 This command generates following folders: 
 
-* plot-production: Use these plots for toner transform process. Print from laser printer. 
-* plot-drill: The drill map. Print from inkjet. 
-* plot-assembly: Use `*-Front.html` and `*-Back.html` for getting assembly maps. Edit those html files to change `left: 1234px` value to fit your schema. 
+* *plot-production*    : Use these plots for toner transform process. Preferably combine these layouts into one file to save toner transfer paper. Print this file from laser printer. 
+* *plot-drill*         : The drill map. Print from inkjet. 
+* *plot-assembly*      : Use `*-Front.html` and `*-Back.html` for getting assembly maps. Edit those html files to change `left: 1234px` value to fit your schema. 
 
 
 
