@@ -25,9 +25,9 @@ plot-pcb.py [your-kicad-project.kicad_pcb]
 
 This command generates following folders: 
 
-* *plot-production*    : Use these plots for toner transform process. Preferably combine these layouts into one file to save toner transfer paper. Print this file from laser printer. 
-* *plot-drill*         : The drill map. Print from inkjet. 
-* *plot-assembly*      : Use `*-Front.html` and `*-Back.html` for getting assembly maps. Edit those html files to change `left: 1234px` value to fit your schema. 
+* **plot-production**    : Use these plots for toner transform process. Preferably combine these layouts into one file to save toner transfer paper. Print this file from laser printer. 
+* **plot-drill**         : The drill map. Print from inkjet. 
+* **plot-assembly**      : Use `*-Front.html` and `*-Back.html` for getting assembly maps. Edit those html files to change `left: 1234px` value to fit your schema. 
 
 
 
