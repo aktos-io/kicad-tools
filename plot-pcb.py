@@ -93,25 +93,6 @@ genMap = True
 drlwriter.CreateDrillandMapFilesSet( pctl.GetPlotDirName(), genDrl, genMap );
 
 
-# These files are needed for testing
-# ########################################
-
-popt.SetOutputDirectory("plot-test")
-
-# Top Layer
-popt.SetDrillMarksType(PCB_PLOT_PARAMS.SMALL_DRILL_SHAPE)
-popt.SetMirror(False)
-pctl.SetLayer(F_Cu)
-pctl.OpenPlotfile("F_Cu", PLOT_FORMAT_SVG, "Top Layer")
-pctl.PlotLayer()
-
-# Bottom Layer
-popt.SetDrillMarksType(PCB_PLOT_PARAMS.SMALL_DRILL_SHAPE)
-popt.SetMirror(True)
-pctl.SetLayer(B_Cu)
-pctl.OpenPlotfile("B_Cu", PLOT_FORMAT_SVG, "Bottom Layer")
-pctl.PlotLayer()
-
 
 # Assembly Map
 # ######################################################

@@ -1,8 +1,47 @@
 #!/bin/bash
 
-filename=$1
-if [[ "$filename" == "" ]]; then
-        echo "usage: $0 file.svg"
-        exit
+if [ "$1" == "--help" ] || [ "$1" == "" ]; then
+    cat <<HELP
+
+    $(basename $0) [options] file.svg
+
+    options:
+
+        [NO_OPTIONS]    : print file.svg from default printer via lpr
+        test            : flip all objects vertically to generate test output
+        remote          : print over remote machine via ssh.
+                          edit your ~/.ssh/config and add the following section:
+
+                            Host pcb
+                            Hostname ip.of.remote.machine
+                            User     youruser
+
+HELP
+    exit
 fi
-inkscape --without-gui --export-pdf=/dev/stdout $filename | lpr
+
+
+
+filename=$1
+
+if [ $# -gt 0 ]; then
+    filename=$2
+    if [[ "$filename" == "" ]]; then
+            echo "usage: $0 $1 file.svg"
+            exit
+    fi
+    cmd=$1
+    if [[ "$cmd" == "test" ]]; then
+        inkscape -g --verb=EditSelectAll --verb=ObjectFlipHorizontally \
+        --verb=EditDeselect --verb=FilePrint --verb EditUndo \
+        --verb FileQuit $filename
+    elif [[ "$cmd" == "remote" ]]; then
+        inkscape --without-gui --export-pdf=/dev/stdout $filename | ssh pcb lpr
+    fi
+else
+    if [[ "$filename" == "" ]]; then
+            echo "usage: $0 file.svg"
+            exit
+    fi
+    inkscape --without-gui --export-pdf=/dev/stdout $filename | lpr
+fi
