@@ -6,11 +6,11 @@ Download this repository in any location. Add the download folder in `$PATH`:
 echo 'export PATH=$PATH:/path/to/download/folder' >> ~/.bashrc  
 
 # if you want to use "plot-pcb remote your.svg" option, add "pcb" remote
-cat >> ~/.ssh/config <<PCB
+cat >> ~/.ssh/config <<PCB_PRINTER
 Host pcb
   Hostname ip.of.remote.machine
   User     youruser
-PCB
+PCB_PRINTER
 ```
 
 # `plot-pcb.py`
