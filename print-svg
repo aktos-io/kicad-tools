@@ -16,15 +16,27 @@ if [ "$1" == "--help" ] || [ "$1" == "" ]; then
                             Hostname ip.of.remote.machine
                             User     youruser
 
+        list            : list available printers 
+
 HELP
     exit
 fi
 
 
+if [[ "$1" == "list" ]]; then 
+    echo "----------------------------------------------------------------------"
+    lpstat -p -d 
+    exit
+    echo "----------------------------------------------------------------------"
+fi
+
+echo "----------------------------------------------------------------------"
+echo "Using $(lpstat -p -d | grep default | cut -d: -f2)"
+echo "----------------------------------------------------------------------"
 
 filename=$1
 
-if [ $# -gt 0 ]; then
+if [ $# -gt 1 ]; then
     filename=$2
     if [[ "$filename" == "" ]]; then
             echo "usage: $0 $1 file.svg"
