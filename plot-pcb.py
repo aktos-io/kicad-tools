@@ -52,7 +52,7 @@ popt.SetUseAuxOrigin(True)
 
 # These files are needed in production
 # ########################################
-popt.SetOutputDirectory("plot-production")
+popt.SetOutputDirectory("plot-pcb")
 
 # Top Layer
 popt.SetDrillMarksType(PCB_PLOT_PARAMS.SMALL_DRILL_SHAPE)
@@ -171,8 +171,9 @@ for side in sides:
     html_filename = os.path.join(pctl.GetPlotDirName(), 'assembly_map_{}.html'.format(side))
     try:
         with open(html_filename, 'r') as x:
-            print("WARNING: {} exists, not overwriting. ".format(html_filename))
-    except:
+            print("WARNING: {} exists, overwriting. ".format(html_filename))
+            raw_input("Press Enter to continue or Ctrl+C to abort...")
+    finally:
         with open(html_filename, "w") as f:
             f.write(assembly_html)
 
