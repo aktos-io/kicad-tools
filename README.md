@@ -13,6 +13,10 @@ Host pcb
 PCB_PRINTER
 ```
 
+## Dependencies 
+
+* inkscape
+
 # `plot-pcb.py`
 
 Use this script to generate appropriate plot files for manufacturing PCB's with toner transfer technique. 
