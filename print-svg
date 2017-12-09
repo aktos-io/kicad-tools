@@ -44,9 +44,15 @@ if [ $# -gt 1 ]; then
     fi
     cmd=$1
     if [[ "$cmd" == "test" ]]; then
-        inkscape -g --verb=EditSelectAll --verb=ObjectFlipHorizontally \
-        --verb=EditDeselect --verb=FilePrint --verb EditUndo \
-        --verb FileQuit $filename
+        inkscape -g                             \
+            --verb=EditSelectAll                \
+            --verb=ObjectFlipHorizontally       \
+            --verb=EditDeselect                 \
+            --verb=FilePrint                    \
+            --verb EditUndo                     \
+            --verb FileQuit                     \
+            $filename
+
     elif [[ "$cmd" == "remote" ]]; then
         inkscape --without-gui --export-pdf=/dev/stdout $filename | ssh pcb lpr
     fi
