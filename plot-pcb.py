@@ -133,27 +133,38 @@ for side in sides:
         <html>
             <head>
                 <style>
+                    @page {
+                        size: landscape;
+                        margin: 0;
+                    }
                     img {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        transform: scale(5);
+                        max-width: 100%;
+                        max-height; 100%;
+                    }
+                    body {
+                        padding: 5mm;
                     }
                     .grayed {
                         filter: opacity(20%);
                     }
+                    .stack {
+                        position: absolute;
+                    }
                     .container {
+                        height: 190mm;
                         position: relative;
-                        left: 1000px;
-                        top: 900px;
+                        overflow: hidden;
+                        border: 1px dashed black;
+
                     }
                 </style>
+                <link rel="stylesheet" type="text/css" href="./crop.css">
             </head>
     """
     assembly_html += """
             <body>
-                <h3><center>{0} ({1})</center></h3>
                 <div class="container">
+                    <h3><center>{0} ({1})</center></h3>
                     {2}
                 </div>
             </body>
@@ -162,19 +173,33 @@ for side in sides:
         file_basename,
         side,
         '\n'.join(
-            ["<img src='{0}-{1}.svg' class='{2}' />".format(
+            ["<img src='{0}-{1}.svg' class='stack {2}' />".format(
                 file_basename, f['postfix'], f['color']
             ) for f in assembly_map_files if f['side'] == side]
         )
     )
 
     html_filename = os.path.join(pctl.GetPlotDirName(), 'assembly_map_{}.html'.format(side))
-    try:
-        with open(html_filename, 'r') as x:
-            print("WARNING: {} exists, overwriting. ".format(html_filename))
-            raw_input("Press Enter to continue or Ctrl+C to abort...")
-    finally:
-        with open(html_filename, "w") as f:
-            f.write(assembly_html)
+    with open(html_filename, "w") as f:
+        f.write(assembly_html)
+
+
+# fine tune with crop.css
+crop_css = """
+    img {
+        transform: scale(2.3);
+        position: relative;
+        top: 180px;
+        /* do not use `left: ...` or `right: ...` */
+    }
+    """
+crop_filename = os.path.join(pctl.GetPlotDirName(), 'crop.css')
+try:
+    with open(crop_filename, 'r') as x:
+        print("WARNING: crop.css exists, not overwriting. ")
+except:
+    with open(crop_filename, "w") as f:
+        f.write(crop_css)
+
 
 pctl.ClosePlot()
