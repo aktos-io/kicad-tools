@@ -27,7 +27,9 @@ try:
 except:
 	import glob
 	filename = glob.glob('./*.kicad_pcb')[0]
-	print("using kicad_pcb file: %s" % filename)
+
+print("using kicad_pcb file: %s" % filename)
+print "------------------------------------------"
 
 
 file_basename = os.path.splitext(filename)[0]
@@ -52,6 +54,7 @@ popt.SetUseAuxOrigin(True)
 
 # These files are needed in production
 # ########################################
+print "+ Generating copper layer (plot-pcb)"
 popt.SetOutputDirectory("plot-pcb")
 
 # Top Layer
@@ -70,6 +73,7 @@ pctl.PlotLayer()
 
 
 # Drill map
+print "+ Generating drill file (plot-drill)"
 popt.SetOutputDirectory("plot-drill")
 # workaround for setting GetPlotDirName
 pctl.OpenPlotfile("myworkaround", PLOT_FORMAT_SVG, "workaround")
@@ -96,6 +100,19 @@ drlwriter.CreateDrillandMapFilesSet( pctl.GetPlotDirName(), genDrl, genMap );
 
 # Assembly Map
 # ######################################################
+mirrored = {
+    'F': False,
+    'B': True
+}
+
+layers = [
+    'Cu',
+    'SilkS',
+    #'Fab',
+    'Paste'
+    ]
+
+print "+ Generating assembly map (plot-assembly) with layers:", ', '.join(layers)
 popt.SetOutputDirectory("plot-assembly")
 
 # We want *everything*
@@ -105,30 +122,24 @@ popt.SetPlotInvisibleText(True)
 
 popt.SetDrillMarksType(PCB_PLOT_PARAMS.SMALL_DRILL_SHAPE)
 pctl.SetColorMode(True)
-
-assembly_map_files = [
-    {'layer': F_Cu,     'side': "Front", 'color': 'grayed', 'mirror': False},
-    {'layer': F_Paste,  'side': "Front", 'color': 'black', 'mirror': False},
-    {'layer': F_Fab,    'side': "Front", 'color': 'black', 'mirror': False},
-
-    {'layer': B_Cu,     'side': "Back", 'color': 'grayed', 'mirror': True},
-    {'layer': B_Paste,  'side': "Back", 'color': 'black', 'mirror': True},
-    {'layer': B_Fab,    'side': "Back", 'color': 'black', 'mirror': True},
-]
-
 popt.SetScale(1)
-i = 0
-for a in assembly_map_files:
-    popt.SetMirror(a['mirror'])
-    pctl.SetLayer(a['layer'])
-    a['postfix'] = "%s_%s_%i" % (a['side'], a['color'], i)
-    pctl.OpenPlotfile(a["postfix"], PLOT_FORMAT_SVG, "Assembly Layer")
-    pctl.PlotLayer()
-    i += 1
 
-sides = ['Front', 'Back'] # FIXME: get from assembly_map_files list
+def get_layer(side, layer):
+    return eval(side.upper() + '_' + layer)
 
-for side in sides:
+
+for side in mirrored:
+    images = ''
+    for layer in layers:
+        name = side + '_' + layer
+        images += "<img src='{0}-{1}.svg' class='stack {2}' />\n".format(file_basename, name, layer)
+
+        popt.SetMirror(mirrored[side])
+        pctl.SetLayer(get_layer(side, layer))
+        pctl.OpenPlotfile(name, PLOT_FORMAT_SVG, "Assembly Layer")
+        pctl.PlotLayer()
+
+    # generate html files
     assembly_html = """
         <html>
             <head>
@@ -144,9 +155,6 @@ for side in sides:
                     body {
                         padding: 5mm;
                     }
-                    .grayed {
-                        filter: opacity(20%);
-                    }
                     .stack {
                         position: absolute;
                     }
@@ -156,6 +164,16 @@ for side in sides:
                         overflow: hidden;
                         border: 1px dashed black;
 
+                    }
+                    /* ---------- LAYERS ---------- */
+                    .Cu {
+                        filter: opacity(18%);
+                    }
+                    .SilkS {
+                        filter: opacity(50%);
+                    }
+                    .Paste {
+                        filter: opacity(90%);
                     }
                 </style>
                 <link rel="stylesheet" type="text/css" href="./crop.css">
@@ -169,15 +187,7 @@ for side in sides:
                 </div>
             </body>
         </html>
-    """.format(
-        file_basename,
-        side,
-        '\n'.join(
-            ["<img src='{0}-{1}.svg' class='stack {2}' />".format(
-                file_basename, f['postfix'], f['color']
-            ) for f in assembly_map_files if f['side'] == side]
-        )
-    )
+    """.format(file_basename, side, images)
 
     html_filename = os.path.join(pctl.GetPlotDirName(), 'assembly_map_{}.html'.format(side))
     with open(html_filename, "w") as f:
@@ -196,7 +206,8 @@ crop_css = """
 crop_filename = os.path.join(pctl.GetPlotDirName(), 'crop.css')
 try:
     with open(crop_filename, 'r') as x:
-        print("WARNING: crop.css exists, not overwriting. ")
+        print "------------------------------------------"
+        print("crop.css already exists, not overwriting. ")
 except:
     with open(crop_filename, "w") as f:
         f.write(crop_css)
