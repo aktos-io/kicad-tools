@@ -204,13 +204,16 @@ crop_css = """
     }
     """
 crop_filename = os.path.join(pctl.GetPlotDirName(), 'crop.css')
+print "------------------------------------------"
 try:
     with open(crop_filename, 'r') as x:
-        print "------------------------------------------"
-        print("crop.css already exists, not overwriting. ")
+        print "crop.css already exists, not overwriting. "
 except:
     with open(crop_filename, "w") as f:
         f.write(crop_css)
+        print ''
+        print '    TIP: Use crop.css for fine tuning (this file will not be overwritten)'
+        print ''
 
 
 pctl.ClosePlot()
