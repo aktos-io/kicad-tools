@@ -75,8 +75,12 @@ pctl.PlotLayer()
 # Drill map
 print "+ Generating drill file (plot-drill)"
 popt.SetOutputDirectory("plot-drill")
-# workaround for setting GetPlotDirName
-pctl.OpenPlotfile("myworkaround", PLOT_FORMAT_SVG, "workaround")
+
+# FIXME: workaround for setting GetPlotDirName
+workaround_name = "workaround"
+pctl.OpenPlotfile(workaround_name, PLOT_FORMAT_SVG, workaround_name)
+workaround_file = os.path.join(pctl.GetPlotDirName(), (file_basename + '-' +  workaround_name + ".svg"))
+os.remove(workaround_file)
 
 drlwriter = EXCELLON_WRITER( board )
 drlwriter.SetMapFileFormat( PLOT_FORMAT_PDF )
