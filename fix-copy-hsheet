@@ -1,0 +1,30 @@
+#!/usr/bin/python
+
+import sys, re
+filename = sys.argv[1]
+
+with open(filename, 'r+b') as f:
+    lines = []
+    widlist = []
+    pattern = re.compile('(.*Ref=")([A-Z]+[0-9]+)(".*)')
+    for line in f:
+        ref = pattern.search(line)
+        if ref:
+            wid = ref.group(2)
+            if wid in widlist:
+                new_wid = re.sub('[0-9]+', '?', wid)
+                print "duplicate wid:", wid, "renamed to: ", new_wid
+                new_line = pattern.sub("\\1%s\\3" % new_wid, line)
+                lines.append(new_line)
+            else:
+                lines.append(line)
+
+            widlist.append(wid)
+        else:
+            lines.append(line)
+
+    new_content = ''.join(lines)
+
+    f.seek(0)
+    f.write(new_content)
+    f.truncate()
