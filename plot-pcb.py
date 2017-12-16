@@ -22,6 +22,11 @@
 import sys, os
 from pcbnew import *
 
+# output folders 
+drill_folder = "plot-drill"
+pcb_folder = "plot-pcb"
+map_folder = "plot-assembly"
+
 try:
 	filename=sys.argv[1]
 except:
@@ -54,8 +59,15 @@ popt.SetUseAuxOrigin(True)
 
 # These files are needed in production
 # ########################################
-print "+ Generating copper layer (plot-pcb)"
-popt.SetOutputDirectory("plot-pcb")
+print "+ Generating copper layer ({0})".format(pcb_folder)
+popt.SetOutputDirectory(pcb_folder)
+
+# make sure that everything in plot-pcb folder is being renewed
+if len(os.listdir(pcb_folder)) > 2:
+    print "----------------------------------------------------"
+    print "!! Delete additional files in {0} folder to make sure every file is up to date".format(pcb_folder)
+    exit()
+
 
 # Top Layer
 popt.SetDrillMarksType(PCB_PLOT_PARAMS.SMALL_DRILL_SHAPE)
@@ -73,8 +85,8 @@ pctl.PlotLayer()
 
 
 # Drill map
-print "+ Generating drill file (plot-drill)"
-popt.SetOutputDirectory("plot-drill")
+print "+ Generating drill file ({0})".format(drill_folder)
+popt.SetOutputDirectory(drill_folder)
 
 # FIXME: workaround for setting GetPlotDirName
 workaround_name = "workaround"
@@ -116,8 +128,10 @@ layers = [
     'Paste'
     ]
 
-print "+ Generating assembly map (plot-assembly) with layers:", ', '.join(layers)
-popt.SetOutputDirectory("plot-assembly")
+print "+ Generating assembly map ({0}) with layers: {1}".format(
+    map_folder,
+    ', '.join(layers) )
+popt.SetOutputDirectory(map_folder)
 
 # We want *everything*
 popt.SetPlotReference(True)
