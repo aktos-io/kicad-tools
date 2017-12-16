@@ -1,4 +1,11 @@
 #!/usr/bin/python
+"""
+When you copy-and-paste a hierarhical sheet, references of contents of the sheet is
+erroneously duplicated too, which causes error when re-annotation is needed. 
+
+This tool replaces duplicate reference numbers with "?" string, thus allowing 
+annotation tool to re-annotate the copied sheets. 
+"""
 
 import sys, re
 filename = sys.argv[1]
