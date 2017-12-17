@@ -29,6 +29,7 @@ with open(filename, 'r+b') as f:
                 new_line = pattern.sub("\\1%s\\3" % new_wid, line)
                 lines.append(new_line)
             else:
+                print "found reference: ", wid, " (first occurrence)"
                 lines.append(line)
 
             widlist.append(wid)
