@@ -1,0 +1,40 @@
+#!/usr/bin/python
+"""
+When you copy-and-paste a hierarhical sheet, the "instance name"
+(shown as "Sheet: ...") isn't changed and Kicad complains about that 
+upon generating the Netlist.
+
+This tool increments the instance name suffixes by one
+"""
+
+import sys, re
+filename = sys.argv[1]
+
+with open(filename, 'r+b') as f:
+    lines = []
+    widlist = []
+    curr_id = 0
+    pattern = re.compile('(^F0 ")([a-zA-Z-_0-9]+)(".*)')
+    for line in f:
+        ref = pattern.search(line)
+        if ref:
+            wid = ref.group(2)
+            if wid in widlist:
+                new_name = "{0}-{1}".format(wid, curr_id)
+                print "duplicate instance:", wid, "renamed to: ", new_name
+                new_line = pattern.sub("\\1%s\\3" % new_name, line)
+                lines.append(new_line)
+                curr_id += 1
+            else:
+                print "found instance: ", wid, " (first occurrence)"
+                lines.append(line)
+
+            widlist.append(wid)
+        else:
+            lines.append(line)
+
+    new_content = ''.join(lines)
+
+    f.seek(0)
+    f.write(new_content)
+    f.truncate()

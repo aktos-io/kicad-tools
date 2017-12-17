@@ -10,6 +10,11 @@ annotation tool to re-annotate the copied sheets.
 import sys, re
 filename = sys.argv[1]
 
+re_annotate_all = False
+if len(sys.argv) > 2 and sys.argv[2] == "--all":
+    print "*** Annotating all..."
+    re_annotate_all = True
+
 with open(filename, 'r+b') as f:
     lines = []
     widlist = []
@@ -18,7 +23,7 @@ with open(filename, 'r+b') as f:
         ref = pattern.search(line)
         if ref:
             wid = ref.group(2)
-            if wid in widlist:
+            if (wid in widlist) or re_annotate_all:
                 new_wid = re.sub('[0-9]+', '?', wid)
                 print "duplicate wid:", wid, "renamed to: ", new_wid
                 new_line = pattern.sub("\\1%s\\3" % new_wid, line)
