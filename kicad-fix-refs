@@ -10,10 +10,23 @@ annotation tool to re-annotate the copied sheets.
 import sys, re
 filename = sys.argv[1]
 
+
 re_annotate_all = False
 if len(sys.argv) > 2 and sys.argv[2] == "--all":
     print "*** Annotating all..."
     re_annotate_all = True
+
+write_to_file = False
+if len(sys.argv) > 2 and sys.argv[2] == "--write":
+    print "*** Writing to file..."
+    write_to_file = True
+
+if write_to_file: 
+    ans = raw_input("Did you close the Schematic Editor? [y/n] ")
+    if ans != "y":
+        print "Schematic Editor should be closed before running this."
+        exit()
+
 
 with open(filename, 'r+b') as f:
     lines = []
@@ -38,6 +51,9 @@ with open(filename, 'r+b') as f:
 
     new_content = ''.join(lines)
 
-    f.seek(0)
-    f.write(new_content)
-    f.truncate()
+    if write_to_file:
+        f.seek(0)
+        f.write(new_content)
+        f.truncate()
+    else:
+        print "**** This was a dry run, use with '--write' parameter to write to the file."
