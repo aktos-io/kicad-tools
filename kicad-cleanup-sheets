@@ -9,6 +9,33 @@ Algorithm:
 * open every schema one by one.
 * find all references
 * walk on that path starting from project schema if it really exists
+
+Example output:
+
+    --- Examining digital-input.sch
+    Project schema: Found R5 in input-1 (instance of digital-input.sch)
+    Project schema: Found R6 in input-2 (instance of digital-input.sch)
+    Project schema: Found C8 in input-1 (instance of digital-input.sch)
+    Project schema: Found C9 in input-2 (instance of digital-input.sch)
+    --- Examining led-layer.sch
+    --- Examining led-driver.sch
+    Project schema: Found R28 in front-leds (instance of led-layer.sch)
+    Project schema: Found R11 in front-leds (instance of led-layer.sch)
+    Project schema: Found R13 in front-leds (instance of led-layer.sch)
+    Project schema: Found R24 in front-leds (instance of led-layer.sch)
+    Project schema: Found R25 in front-leds (instance of led-layer.sch)
+    Project schema: Found R26 in front-leds (instance of led-layer.sch)
+    Project schema: Found R27 in front-leds (instance of led-layer.sch)
+    Project schema: Found R29 in front-leds (instance of led-layer.sch)
+    Project schema: Found R30 in front-leds (instance of led-layer.sch)
+    Project schema: Found R31 in front-leds (instance of led-layer.sch)
+    Project schema: Found R32 in front-leds (instance of led-layer.sch)
+    Project schema: Found R43 in mb_reset (instance of led-driver.sch)
+    Project schema: Found R35 in front-leds (instance of led-layer.sch)
+    Project schema: Found Q10 in front-leds (instance of led-layer.sch)
+    Project schema: Found Q4 in front-leds (instance of led-layer.sch)
+    Project schema: Found Q5 in front-leds (instance of led-layer.sch)
+
 """
 
 import sys, re
@@ -60,7 +87,7 @@ for filename in glob.glob("*.sch"):
                         if pline == "U {0}\n".format(paths[0]):
                             instance_name = re.search('[^"]+"([^"]+).*', p.next()).group(1)
                             class_name    = re.search('[^"]+"([^"]+).*', p.next()).group(1)
-                            print "Project schema: Found {1} in {2} (instance of {3})".format(
+                            print "\t\tINFO: Project schema: Found {1} in {2} (instance of {3})".format(
                                 paths[0], reference, instance_name, class_name)
                             instance_found = True
                 if instance_found:
