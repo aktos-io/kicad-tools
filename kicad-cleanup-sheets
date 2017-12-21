@@ -1,10 +1,14 @@
 #!/usr/bin/python
 """
-When you copy-and-paste a hierarhical sheet, references of contents of the sheet is
-erroneously duplicated too, which causes error when re-annotation is needed.
+Finds unused references in the project, allowing unnecessary/erroneous "fix-refs"
 
-This tool replaces duplicate reference numbers with "?" string, thus allowing
-annotation tool to re-annotate the copied sheets.
+MUST be run before `kicad-fix-refs`
+
+Algorithm:
+
+* open every schema one by one.
+* find all references
+* walk on that path starting from project schema if it really exists
 """
 
 import sys, re
@@ -39,19 +43,25 @@ for filename in glob.glob("*.sch"):
     with open(filename, 'r+b') as f:
         lines = []
         widlist = []
-        pattern = re.compile('(^AR Path="/)([A-Z0-9/]+)(" .*)')
+        pattern = re.compile('(^AR Path="/)([A-Z0-9/]+)(" )(Ref=")([A-Z]+[0-9]+)(".*)')
         for line in f:
             ref = pattern.search(line)
             if ref:
                 path = ref.group(2)
+                reference = ref.group(5)
                 #print "detected reference: ", path
                 paths = path.split('/')
+                #
+                # Walk on the paths
                 instance_found = False
                 with open(project_name + '.sch', 'r') as p:
                     for pline in p:
                         # search for this path in project schema
                         if pline == "U {0}\n".format(paths[0]):
-                            #print "Found this component in project schema: ", paths[0]
+                            instance_name = re.search('[^"]+"([^"]+).*', p.next()).group(1)
+                            class_name    = re.search('[^"]+"([^"]+).*', p.next()).group(1)
+                            print "Project schema: Found {1} in {2} (instance of {3})".format(
+                                paths[0], reference, instance_name, class_name)
                             instance_found = True
                 if instance_found:
                     lines.append(line)
