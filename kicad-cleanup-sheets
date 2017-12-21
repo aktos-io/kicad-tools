@@ -8,7 +8,7 @@ Algorithm:
 
 * open every schema one by one.
 * find all references
-* walk on that path starting from project schema if it really exists
+* walk on that path starting from project schema to see if it really exists
 
 Example output:
 
@@ -86,7 +86,9 @@ for filename in glob.glob("*.sch"):
                     for pline in p:
                         # search for this path in project schema
                         if pline == "U {0}\n".format(paths[0]):
+                            # next line is instance name 
                             instance_name = re.search('[^"]+"([^"]+).*', p.next()).group(1)
+                            # next line is class name (.sch file name)
                             class_name    = re.search('[^"]+"([^"]+).*', p.next()).group(1)
                             print "\t\tINFO: Project schema: Found {1} in {2} (instance of {3})".format(
                                 paths[0], reference, instance_name, class_name)
