@@ -35,8 +35,7 @@ import glob, os
 for filename in glob.glob("*.sch"):
     if filename.startswith('_'):
         continue
-    print "Examining {0}".format(filename)
-    print "-------------------------------------------"
+    print "--- Examining {0}".format(filename)
     with open(filename, 'r+b') as f:
         lines = []
         widlist = []
