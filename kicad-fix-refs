@@ -1,10 +1,10 @@
 #!/usr/bin/python
 """
 When you copy-and-paste a hierarhical sheet, references of contents of the sheet is
-erroneously duplicated too, which causes error when re-annotation is needed. 
+erroneously duplicated too, which causes error when re-annotation is needed.
 
-This tool replaces duplicate reference numbers with "?" string, thus allowing 
-annotation tool to re-annotate the copied sheets. 
+This tool replaces duplicate reference numbers with "?" string, thus allowing
+annotation tool to re-annotate the copied sheets.
 """
 
 import sys, re
@@ -21,20 +21,13 @@ if len(sys.argv) > 2 and sys.argv[2] == "--write":
     print "*** Writing to file..."
     write_to_file = True
 
-if write_to_file: 
+if write_to_file:
     ans = raw_input("Did you close the Schematic Editor? [y/n] ")
     if ans != "y":
         print "Schematic Editor should be closed before running this."
         exit()
 
 widlist = []
-with open(filename, 'r') as f:
-    for line in f:
-        ref = re.search('^F 0 "([A-Za-z]+[0-9]+)" .*', line)
-        if ref:
-            wid = ref.group(1)
-            print "original reference: ", wid
-            widlist.append(wid)
 
 with open(filename, 'r+b') as f:
     lines = []
