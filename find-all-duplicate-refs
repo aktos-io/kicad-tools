@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for i in *.sch; do
+    echo $i
+    echo "------------"
+    kicad-fix-refs $i | grep duplicate
+done
