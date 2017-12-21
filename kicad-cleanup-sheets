@@ -62,6 +62,7 @@ if write_to_file:
 
 import glob, os
 #os.chdir("/mydir")
+all_clean = True
 
 for filename in glob.glob("*.sch"):
     if filename.startswith('_'):
@@ -94,6 +95,7 @@ for filename in glob.glob("*.sch"):
                     lines.append(line)
                 else:
                     sys.stdout.write("This instance is not found: " + line)
+                    all_clean = False
             else:
                 # some other line, just append
                 lines.append(line)
@@ -105,5 +107,12 @@ for filename in glob.glob("*.sch"):
             f.write(new_content)
             f.truncate()
 
-if not write_to_file:
+if all_clean:
+    print
+    print "----------------------------------------------"
+    print "All clean. Nothing to do here."
+    print "----------------------------------------------"
+    print
+
+if not all_clean and not write_to_file:
     print "**** This was a dry run, use with '--write' parameter to write to the file."
