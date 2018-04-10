@@ -19,13 +19,32 @@
         the unknown frame references template.
 '''
 
-import sys, os
+import sys, os, errno
 from pcbnew import *
 
-# output folders 
-drill_folder = "plot-drill"
-pcb_folder = "plot-pcb"
-map_folder = "plot-assembly"
+# output folders
+fabrication_files = "fabrication"
+gerber_files = fabrication_files + "/gerber"
+
+ppfx = "prototype"
+drill_folder = ppfx + "/drill"
+pcb_folder = ppfx + "/copper"
+map_folder = ppfx + "/assembly"
+bom_folder = gerber_files
+
+# create the prototype folder if not exists
+def mkdir(name):
+    try:
+        os.makedirs(name)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+# Create output folders
+mkdir(ppfx)
+mkdir(gerber_files)
+mkdir(pcb_folder)
+mkdir(map_folder)
 
 try:
 	filename=sys.argv[1]
@@ -47,18 +66,18 @@ popt = pctl.GetPlotOptions()
 
 # Set some important plot options:
 popt.SetPlotFrameRef(False)
-popt.SetLineWidth(FromMM(0.35))
+popt.SetLineWidth(FromMM(0.1))
 
 popt.SetAutoScale(False)
 popt.SetScale(1)
 popt.SetMirror(False)
 popt.SetUseGerberAttributes(True)
-popt.SetExcludeEdgeLayer(False);
+popt.SetExcludeEdgeLayer(False)
 popt.SetUseAuxOrigin(True)
 
 
-# These files are needed in production
-# ########################################
+# Copper layer
+# ----------------------------------------------
 print "+ Generating copper layer ({0})".format(pcb_folder)
 popt.SetOutputDirectory(pcb_folder)
 
@@ -66,8 +85,7 @@ popt.SetOutputDirectory(pcb_folder)
 if len(os.listdir(pcb_folder)) > 2:
     print "----------------------------------------------------"
     print "!! Delete additional files in {0} folder to make sure every file is up to date".format(pcb_folder)
-    exit()
-
+    exit(2)
 
 # Top Layer
 popt.SetDrillMarksType(PCB_PLOT_PARAMS.SMALL_DRILL_SHAPE)
@@ -85,7 +103,8 @@ pctl.PlotLayer()
 
 
 # Drill map
-print "+ Generating drill file ({0})".format(drill_folder)
+# ----------------------------------------------
+print "+ Generating drill map ({0})".format(drill_folder)
 popt.SetOutputDirectory(drill_folder)
 
 # FIXME: workaround for setting GetPlotDirName
@@ -108,7 +127,7 @@ drlwriter.SetOptions( mirror, minimalHeader, offset, mergeNPTH )
 metricFmt = True
 drlwriter.SetFormat( metricFmt )
 
-genDrl = True
+genDrl = False
 genMap = True
 drlwriter.CreateDrillandMapFilesSet( pctl.GetPlotDirName(), genDrl, genMap );
 
@@ -116,16 +135,15 @@ drlwriter.CreateDrillandMapFilesSet( pctl.GetPlotDirName(), genDrl, genMap );
 
 # Assembly Map
 # ######################################################
-mirrored = {
+sides = {
     'F': False,
     'B': True
 }
-
 layers = [
     'Cu',
+    'Paste',
     'SilkS',
-    #'Fab',
-    'Paste'
+    'Fab'
     ]
 
 print "+ Generating assembly map ({0}) with layers: {1}".format(
@@ -141,21 +159,11 @@ popt.SetPlotInvisibleText(True)
 popt.SetDrillMarksType(PCB_PLOT_PARAMS.SMALL_DRILL_SHAPE)
 pctl.SetColorMode(True)
 popt.SetScale(1)
+popt.SetLineWidth(FromMM(0.05))
 
-def get_layer(side, layer):
-    return eval(side.upper() + '_' + layer)
-
-
-for side in mirrored:
+for side in sides:
     images = ''
-    for layer in layers:
-        name = side + '_' + layer
-        images += "<img src='{0}-{1}.svg' class='stack {2}' />\n".format(file_basename, name, layer)
 
-        popt.SetMirror(mirrored[side])
-        pctl.SetLayer(get_layer(side, layer))
-        pctl.OpenPlotfile(name, PLOT_FORMAT_SVG, "Assembly Layer")
-        pctl.PlotLayer()
 
     # generate html files
     assembly_html = """
@@ -184,28 +192,45 @@ for side in mirrored:
 
                     }
                     /* ---------- LAYERS ---------- */
-                    .Cu {
-                        filter: opacity(18%);
-                    }
-                    .SilkS {
-                        filter: opacity(50%);
+                    .Cu{
+                        opacity: 0.1;
                     }
                     .Paste {
-                        filter: opacity(90%);
+                        opacity: 0.5;
+                    }
+                    .Fab, .SilkS {
+                        /* use as is */
                     }
                 </style>
                 <link rel="stylesheet" type="text/css" href="./crop.css">
             </head>
-    """
-    assembly_html += """
             <body>
-                <div class="container">
-                    <h3><center>{0} ({1})</center></h3>
-                    {2}
+    """
+
+    assembly_html += '''
+        <div class="container">
+            <h3><center>{0} ({1})</center></h3>
+    '''.format(file_basename, side)
+
+    for layer in layers:
+        name = side + '_' + layer
+        assembly_html += """
+            <img
+                src='{0}-{1}.svg'
+                class='stack {2}'>
+            </img>
+        """.format(file_basename, name, layer)
+
+        popt.SetMirror(sides[side])
+        pctl.SetLayer(eval(name))
+        pctl.OpenPlotfile(name, PLOT_FORMAT_SVG, "Assembly Layer")
+        pctl.PlotLayer()
+
+    assembly_html += '''
                 </div>
             </body>
         </html>
-    """.format(file_basename, side, images)
+    '''
 
     html_filename = os.path.join(pctl.GetPlotDirName(), 'assembly_map_{}.html'.format(side))
     with open(html_filename, "w") as f:
@@ -214,7 +239,7 @@ for side in mirrored:
 
 # fine tune with crop.css
 crop_css = """
-    img {
+    .stack {
         transform: scale(2.3);
         position: relative;
         top: 180px;
@@ -235,3 +260,102 @@ except:
 
 
 pctl.ClosePlot()
+
+
+
+# Generate Fabrication files
+# =================================================================0
+print "------------------------------------------"
+import shutil
+
+# Cleanup the output files
+shutil.rmtree(gerber_files)
+try:
+    os.remove(fabrication_files + "/gerber.zip")
+except:
+    pass
+
+# Drill file
+# ----------------------------------------------
+print "+ Generating drill file ({0})".format(gerber_files)
+popt.SetOutputDirectory(gerber_files)
+
+# FIXME: workaround for setting GetPlotDirName
+workaround_name = "workaround"
+pctl.OpenPlotfile(workaround_name, PLOT_FORMAT_SVG, workaround_name)
+workaround_file = os.path.join(pctl.GetPlotDirName(), (file_basename + '-' +  workaround_name + ".svg"))
+os.remove(workaround_file)
+
+drlwriter = EXCELLON_WRITER( board )
+drlwriter.SetMapFileFormat( PLOT_FORMAT_PDF )
+
+mirror = False
+minimalHeader = False
+offset = wxPoint(0,0)
+# False to generate 2 separate drill files (one for plated holes, one for non plated holes)
+# True to generate only one drill file
+mergeNPTH = True # DO NOT CHANGE
+drlwriter.SetOptions( mirror, minimalHeader, offset, mergeNPTH )
+
+metricFmt = True
+drlwriter.SetFormat( metricFmt )
+
+genDrl = True
+genMap = False
+drlwriter.CreateDrillandMapFilesSet( pctl.GetPlotDirName(), genDrl, genMap );
+
+# Gerber files
+# ----------------------------------------------
+popt.SetOutputDirectory(gerber_files)
+popt.SetExcludeEdgeLayer(True) # do not change
+popt.SetMirror(False) # do not change
+popt.SetUseGerberAttributes(False) # do not change
+popt.SetUseGerberProtelExtensions(True) # do not change
+popt.SetSubtractMaskFromSilk(False) # do not change
+popt.SetLineWidth(FromMM(0.1))
+
+gerber_layers = []
+for side in sides:
+    for layer in ['Cu','SilkS','Mask']:
+        gerber_layers.append(side + '_' + layer)
+gerber_layers.append("Edge_Cuts")
+
+print "+ Generating Gerber files ({0}) ({1})".format(gerber_files, ', '.join(gerber_layers))
+for name in gerber_layers:
+    pctl.SetLayer(eval(name))
+    # FIXME: There is a problem with PLOT_FORMAT_GERBER as it doesn't produce
+    # the correct SilkS layer
+    pctl.OpenPlotfile(name, PLOT_FORMAT_PDF, "bbb")
+    pctl.PlotLayer()
+pctl.ClosePlot()
+
+print "+ Obfuscating generated Gerber files"
+file_prefix = os.path.basename(file_basename)
+def fp(name):
+    return gerber_files + '/' + name
+
+for filename in os.listdir(gerber_files):
+    if filename.startswith(file_prefix):
+        #print "filename: ", filename
+        os.rename(fp(filename), fp(filename.replace(file_prefix, 'pcb')))
+
+from textwrap import dedent
+print "+ Adding generator scripts"
+script_file = fabrication_files + "/generate-zip.sh"
+with open(script_file, "w") as f:
+    script = dedent("""
+        #!/bin/bash
+        name="gerber"
+        echo "Removing former ${name}.zip file..."
+        rm ${name}.zip 2> /dev/null
+        echo "Creating new zip file from ${name} folder..."
+        zip -r "${name}.zip" "${name}"
+        """).strip()
+    f.write(script)
+os.chmod(script_file, 0755)
+
+
+# Generate BOM
+print "+ TODO: Add BOM"
+with open(fabrication_files + '/TODO_ADD_BOM_HERE', "w") as f:
+    f.write('')
