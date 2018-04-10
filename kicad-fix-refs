@@ -12,12 +12,12 @@ filename = sys.argv[1]
 
 
 re_annotate_all = False
-if len(sys.argv) > 2 and sys.argv[2] == "--all":
+if len(sys.argv) > 2 and "--all" in sys.argv:
     print "*** Annotating all..."
     re_annotate_all = True
 
 write_to_file = False
-if len(sys.argv) > 2 and sys.argv[2] == "--write":
+if len(sys.argv) > 2 and "--write" in sys.argv:
     print "*** Writing to file..."
     write_to_file = True
 
@@ -28,11 +28,23 @@ if write_to_file:
         exit()
 
 widlist = []
-
 with open(filename, 'r+b') as f:
     lines = []
     pattern = re.compile('(.*Ref=")([A-Z]+[0-9]+)(".*)')
     for line in f:
+        if re_annotate_all:
+            #F 0 "C?" H 3625 3100 50  0000 L CNN
+            patt = re.compile('(^F 0 ")([A-Z]+[0-9]+)(".*)')
+            r = patt.search(line)
+            if r:
+                id = r.group(2)
+                new_id = re.sub('[0-9]+', '?', id)
+                print "orig id {0} -> {1}".format(id, new_id)
+                new_line = patt.sub("\\1%s\\3" % new_id, line)
+                lines.append(new_line)
+                continue
+
+
         ref = pattern.search(line)
         if ref:
             wid = ref.group(2)
