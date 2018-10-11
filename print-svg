@@ -1,31 +1,75 @@
 #!/bin/bash
+set -eu -o pipefail
+safe_source () { [[ ! -z ${1:-} ]] && source $1; _dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; _sdir=$(dirname "$(readlink -f "$0")"); }; safe_source
+# end of bash boilerplate
 
-if [ "$1" == "--help" ] || [ "$1" == "" ]; then
+
+show_help(){
     cat <<HELP
 
     $(basename $0) [options] file.svg
 
-    options:
+        Prints the file.svg from default printer via lpr.
 
-        [NO_OPTIONS]    : print file.svg from default printer via lpr
-        test            : flip all objects vertically to generate test output
-        remote          : print over remote machine via ssh.
-                          edit your ~/.ssh/config and add the following section:
-
-                            Host pcb
-                            Hostname ip.of.remote.machine
-                            User     youruser
-
-        list            : list available printers 
+    Options:
+        --test              : flip all objects vertically to generate test output
+        --remote [target]   : print over remote machine via ssh. Default target is "pcb".
+        --list              : list available printers
 
 HELP
     exit
-fi
+}
 
+die(){
+    echo_red "$1"
+    show_help
+    exit 1
+}
 
-if [[ "$1" == "list" ]]; then 
+# Parse command line arguments
+# ---------------------------
+# Initialize parameters
+list_printers=false
+test_mode=false
+remote_printer=
+# ---------------------------
+args=("$@")
+_count=1
+while :; do
+    key="${1:-}"
+    case $key in
+        -h|-\?|--help|'')
+            show_help    # Display a usage synopsis.
+            exit
+            ;;
+        # --------------------------------------------------------
+        --list) shift
+            list_printers=true
+            ;;
+        --test) shift
+            test_mode=true
+            ;;
+        --remote) shift
+            remote_printer=${1:-pcb}
+            ;;
+
+        # --------------------------------------------------------
+        -*) # Handle unrecognized options
+            echo
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+        *)  # Generate the positional arguments: $_arg1, $_arg2, ...
+            [[ ! -z ${1:-} ]] && declare _arg$((_count++))="$1" && shift
+    esac
+    [[ -z ${1:-} ]] && break
+done; set -- "${args[@]}"
+# use $_arg1 in place of $1, $_arg2 in place of $2 and so on, "$@" is intact
+
+if [[ $list_printers = true ]]; then
     echo "----------------------------------------------------------------------"
-    lpstat -p -d 
+    lpstat -p -d | cut -d '.' -f 1
     exit
     echo "----------------------------------------------------------------------"
 fi
@@ -34,32 +78,24 @@ echo "----------------------------------------------------------------------"
 echo "Using $(lpstat -p -d | grep default | cut -d: -f2)"
 echo "----------------------------------------------------------------------"
 
-filename=$1
+[[ -z $_arg1 ]] && die "Filename is required."
 
-if [ $# -gt 1 ]; then
-    filename=$2
-    if [[ "$filename" == "" ]]; then
-            echo "usage: $0 $1 file.svg"
-            exit
-    fi
-    cmd=$1
-    if [[ "$cmd" == "test" ]]; then
-        inkscape -g                             \
-            --verb=EditSelectAll                \
-            --verb=ObjectFlipHorizontally       \
-            --verb=EditDeselect                 \
-            --verb=FilePrint                    \
-            --verb EditUndo                     \
-            --verb FileQuit                     \
-            $filename
+filename=$_arg1
 
-    elif [[ "$cmd" == "remote" ]]; then
-        inkscape --without-gui --export-pdf=/dev/stdout $filename | ssh pcb lpr
-    fi
+if [[ $test_mode = true ]]; then
+    # this opens inkscape and performs necessary operations.
+    # you are responsible for printing.
+    inkscape -g                             \
+        --verb=EditSelectAll                \
+        --verb=ObjectFlipHorizontally       \
+        --verb=EditDeselect                 \
+        --verb=FilePrint                    \
+        --verb EditUndo                     \
+        --verb FileQuit                     \
+        $filename
+elif [[ $remote_printer != "" ]]; then
+    inkscape --without-gui --export-pdf=/dev/stdout $filename | ssh $remote_printer lpr
 else
-    if [[ "$filename" == "" ]]; then
-            echo "usage: $0 file.svg"
-            exit
-    fi
+    # use default printer
     inkscape --without-gui --export-pdf=/dev/stdout $filename | lpr
 fi
