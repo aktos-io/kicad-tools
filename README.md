@@ -1,6 +1,11 @@
 # Install
 
-Clone or download this repository in any location. Add the download folder in `$PATH` in `.bashrc`.
+1. Clone this repository: 
+
+   ```bash
+   git clone --recursive https://github.com/aktos-io/kicad-tools
+   ```
+2. Add the download folder in `$PATH` in `.bashrc`.
 
 ## Dependencies
 
