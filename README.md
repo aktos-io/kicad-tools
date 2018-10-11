@@ -26,24 +26,8 @@ This command generates following folders:
 
 # `print-svg`
 
-Prints svg files accurately.
+Prints svg files accurately. See `print-svg --help`
 
-## Usage
+# `kicad-use-component`
 
-1. Test your layout if footprints match with real ones. Flip `your.svg` horizontally and print:
-
-```
-print-svg your.svg --test
-```
-
-2. Either Print `your.svg` directly from default printer via lpr:
-
-```
-print-svg your.svg
-```
-
-...or print `your.svg` over ssh:
-
-```
-print-svg your.svg --remote mytarget
-```
+Use a pre-defined schematic file from a library. See `kicad-use-component --help`

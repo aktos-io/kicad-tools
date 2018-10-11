@@ -1,0 +1,80 @@
+#!/bin/bash
+set -eu -o pipefail
+safe_source () { [[ ! -z ${1:-} ]] && source $1; _dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; _sdir=$(dirname "$(readlink -f "$0")"); }; safe_source
+# end of bash boilerplate
+
+safe_source $_sdir/lib/all.sh
+
+show_help(){
+    cat <<HELP
+
+    $(basename $0) [options] path/to/file.sch
+
+        Copies file.sch to the current folder
+
+    Options:
+        --sync      : Copies file.sch onto original source.
+        --all       : Synces back all files.
+
+HELP
+    exit
+}
+
+die(){
+    echo_red "$1"
+    show_help
+    exit 1
+}
+
+# Parse command line arguments
+# ---------------------------
+# Initialize parameters
+sync_back=false
+all_files=false
+# ---------------------------
+args=("$@")
+_count=1
+while :; do
+    key="${1:-}"
+    case $key in
+        -h|-\?|--help|'')
+            show_help    # Display a usage synopsis.
+            exit
+            ;;
+        # --------------------------------------------------------
+        --sync) shift
+            sync_back=true
+            ;;
+        --all) shift
+            all_files=true
+            ;;
+        # --------------------------------------------------------
+        -*) # Handle unrecognized options
+            echo
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+        *)  # Generate the positional arguments: $_arg1, $_arg2, ...
+            [[ ! -z ${1:-} ]] && declare _arg$((_count++))="$1" && shift
+    esac
+    [[ -z ${1:-} ]] && break
+done; set -- "${args[@]}"
+# use $_arg1 in place of $1, $_arg2 in place of $2 and so on, "$@" is intact
+
+filename=${_arg1}
+project_dir=$PWD
+target_file="$project_dir/$(basename $filename)"
+
+if [[ -f $target_file ]]; then
+    if prompt_yes_no "$(basename $target_file) exists. Do you really want me to overwrite it?"; then
+        mv $target_file $target_file.bak
+    else
+        echo_yellow "Aborted."
+        exit 0
+    fi
+fi
+
+cp $filename $target_file
+echo_green "$(basename $filename) is enabled."
+echo_green "Now add this HS in KiCAD."

@@ -21,7 +21,7 @@ HELP
 }
 
 die(){
-    echo_red "$1"
+    echo "$1"
     show_help
     exit 1
 }

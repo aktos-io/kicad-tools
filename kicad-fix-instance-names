@@ -1,8 +1,8 @@
 #!/usr/bin/python
 """
-When you copy-and-paste a hierarhical sheet, the "instance name"
-(shown as "Sheet: ...") isn't changed and Kicad complains about that 
-upon generating the Netlist.
+When you copy-and-paste a hierarhical sheet from another project, the "instance name"
+(shown as "Sheet: ...") isn't changed and Kicad complains about that
+when generating the Netlist.
 
 This tool increments the instance name suffixes by one
 """
@@ -15,7 +15,7 @@ if len(sys.argv) > 2 and sys.argv[2] == "--write":
     print "*** Writing to file..."
     write_to_file = True
 
-if write_to_file: 
+if write_to_file:
     ans = raw_input("Did you close the Schematic Editor? [y/n] ")
     if ans != "y":
         print "Schematic Editor should be closed before running this."
@@ -53,5 +53,3 @@ with open(filename, 'r+b') as f:
         f.truncate()
     else:
         print "**** This was a dry run, use with '--write' parameter to write to the file."
-
-
