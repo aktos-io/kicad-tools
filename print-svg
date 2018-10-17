@@ -80,7 +80,7 @@ echo "----------------------------------------------------------------------"
 
 [[ -z $_arg1 ]] && die "Filename is required."
 
-filename=$_arg1
+filename="$_arg1"
 
 if [[ $test_mode = true ]]; then
     # this opens inkscape and performs necessary operations.
@@ -92,10 +92,10 @@ if [[ $test_mode = true ]]; then
         --verb=FilePrint                    \
         --verb EditUndo                     \
         --verb FileQuit                     \
-        $filename
+        "$filename"
 elif [[ $remote_printer != "" ]]; then
-    inkscape --without-gui --export-pdf=/dev/stdout $filename | ssh $remote_printer lpr
+    inkscape --without-gui --export-pdf=/dev/stdout "$filename" | ssh $remote_printer lpr
 else
     # use default printer
-    inkscape --without-gui --export-pdf=/dev/stdout $filename | lpr
+    inkscape --without-gui --export-pdf=/dev/stdout "$filename" | lpr
 fi
